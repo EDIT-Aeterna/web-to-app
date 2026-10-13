@@ -480,6 +480,13 @@ data class WebViewConfig(
      */
     val sharePromptBeforeUse: Boolean = true,
 
+    /**
+     * Toast on inbound share / open-with ("use the page's upload button"). Pages that
+     * listen for `wta:share` and upload themselves do not need it. Forced off when
+     * [shareDeliveryMode] is [ShareDeliveryMode.JS_EVENT] — that toast would be a lie.
+     */
+    val shareShowReceivedToast: Boolean = true,
+
     val enableZoomPolyfill: Boolean = true,
     val enableCrossOriginIsolation: Boolean = false,
     val hideUrlPreview: Boolean = false,

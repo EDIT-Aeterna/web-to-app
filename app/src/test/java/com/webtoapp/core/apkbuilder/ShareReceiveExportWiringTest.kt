@@ -15,9 +15,9 @@ import org.junit.Test
  * The chain is `WebViewConfig → ShareReceiveBlock → shell JSON → ShellConfig.webViewConfig`.
  * Two things here are easy to get wrong and are exactly what this file locks down:
  *
- * 1. The four runtime keys must land inside the nested `webViewConfig` object — they are read
+ * 1. The runtime keys must land inside the nested `webViewConfig` object — they are read
  *    from [com.webtoapp.core.shell.WebViewShellConfig], not from the flat `ShellConfig`. Put
- *    them at the top level and Gson silently drops all four; the app then accepts the share,
+ *    them at the top level and Gson silently drops them; the app then accepts the share,
  *    finds no delivery mode, and does nothing. (That is what the first draft of this change
  *    did; `WebViewConfigBooleanCoverageTest` caught it.)
  * 2. The resolved mime list is derived from the two toggles, and an app that receives neither
@@ -29,7 +29,8 @@ class ShareReceiveExportWiringTest {
         images: Boolean = false,
         text: Boolean = false,
         mode: ShareDeliveryMode = ShareDeliveryMode.BOTH,
-        prompt: Boolean = true
+        prompt: Boolean = true,
+        showToast: Boolean = true
     ) = WebApp(
         name = "share",
         url = "https://example.com",
@@ -37,7 +38,8 @@ class ShareReceiveExportWiringTest {
             receiveShareImages = images,
             receiveShareText = text,
             shareDeliveryMode = mode,
-            sharePromptBeforeUse = prompt
+            sharePromptBeforeUse = prompt,
+            shareShowReceivedToast = showToast
         )
     )
 
@@ -85,22 +87,25 @@ class ShareReceiveExportWiringTest {
         val app = webApp(
             images = true,
             mode = ShareDeliveryMode.FILE_CHOOSER_PREFILL,
-            prompt = false
+            prompt = false,
+            showToast = false
         )
 
         val block = app.toApkConfig("com.example.share").shareReceive
         assertThat(block.deliveryMode).isEqualTo("FILE_CHOOSER_PREFILL")
         assertThat(block.promptBeforeUse).isFalse()
+        assertThat(block.showReceivedToast).isFalse()
 
         val shellWv = shellConfigOf(app).webViewConfig
         assertThat(shellWv.shareDeliveryMode).isEqualTo("FILE_CHOOSER_PREFILL")
         assertThat(shellWv.sharePromptBeforeUse).isFalse()
+        assertThat(shellWv.shareShowReceivedToast).isFalse()
         assertThat(shellWv.receiveShareImages).isTrue()
         assertThat(shellWv.receiveShareText).isFalse()
     }
 
     @Test
-    fun `the four runtime keys land in the nested webViewConfig payload`() {
+    fun `the runtime keys land in the nested webViewConfig payload`() {
         val app = webApp(images = true, text = true)
         val json = ApkConfigJsonFactory.toShellConfigJson(app.toApkConfig("com.example.share"))
 
@@ -113,7 +118,8 @@ class ShareReceiveExportWiringTest {
             "receiveShareImages",
             "receiveShareText",
             "shareDeliveryMode",
-            "sharePromptBeforeUse"
+            "sharePromptBeforeUse",
+            "shareShowReceivedToast"
         )
     }
 
@@ -124,7 +130,9 @@ class ShareReceiveExportWiringTest {
         assertThat(app.webViewConfig.receiveShareImages).isFalse()
         assertThat(app.webViewConfig.receiveShareText).isFalse()
         assertThat(app.webViewConfig.enableShareReceive).isFalse()
+        assertThat(app.webViewConfig.shareShowReceivedToast).isTrue()
         assertThat(app.toApkConfig("com.example.share").shareReceive.enabled).isFalse()
+        assertThat(app.toApkConfig("com.example.share").shareReceive.showReceivedToast).isTrue()
     }
 
     @Test

@@ -357,6 +357,7 @@ data class ApkConfig(
     val shareReceiveText: Boolean get() = shareReceive.text
     val shareDeliveryMode: String get() = shareReceive.deliveryMode
     val sharePromptBeforeUse: Boolean get() = shareReceive.promptBeforeUse
+    val shareShowReceivedToast: Boolean get() = shareReceive.showReceivedToast
     val shareReceiveMimeTypes: List<String> get() = shareReceive.mimeTypes
     val openWithEnabled: Boolean get() = openWith.enabled
 
@@ -848,6 +849,7 @@ data class ShareReceiveBlock(
     val text: Boolean = false,
     val deliveryMode: String = "BOTH",
     val promptBeforeUse: Boolean = true,
+    val showReceivedToast: Boolean = true,
     val mimeTypes: List<String> = emptyList()
 )
 

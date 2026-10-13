@@ -21,8 +21,10 @@ import java.io.File
  *
  * Payloads that fit [ShareReceiveContract.INLINE_MAX_BYTES] carry a base64 `dataUrl` so the
  * page can use the bytes with no further round-trip. Larger ones are persisted and offered to
- * the file chooser, but reach the page as metadata only — pushing multi-megabyte strings
- * through `evaluateJavascript` is unreliable and needlessly inflates memory.
+ * the file chooser; the push payload is metadata only (`inline: false`) plus `fileUrl`.
+ * Pages that cannot open `file://` (typical for HTML apps on a local http origin) call
+ * `WTAShareInbox.readBlob(id)` / `item.readBlob()`, which pull the bytes in
+ * [ShareReceiveContract.READ_CHUNK_MAX_BYTES] slices through the JS bridge.
  */
 private const val TAG = "SharePagePayload"
 
@@ -91,9 +93,73 @@ val SHARE_INBOX_BOOTSTRAP_JS: String = """
             } catch (e) { }
         }
 
+        function b64ToBytes(b64) {
+            var bin = atob(b64);
+            var out = new Uint8Array(bin.length);
+            for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+            return out;
+        }
+
+        function readBlob(id) {
+            return new Promise(function(resolve, reject) {
+                var bridge = window.${ShareReceiveContract.JS_BRIDGE_NAME};
+                if (!id || !bridge || typeof bridge.payloadSize !== 'function' ||
+                    typeof bridge.readChunk !== 'function') {
+                    reject(new Error('share inbox bridge unavailable'));
+                    return;
+                }
+                var size = bridge.payloadSize(id);
+                if (size < 0) {
+                    reject(new Error('shared item not found'));
+                    return;
+                }
+                var mime = (typeof bridge.payloadMime === 'function' && bridge.payloadMime(id)) ||
+                    'application/octet-stream';
+                var chunk = ${ShareReceiveContract.READ_CHUNK_MAX_BYTES};
+                var parts = [];
+                var offset = 0;
+                function step() {
+                    try {
+                        if (offset >= size) {
+                            resolve(new Blob(parts, { type: mime }));
+                            return;
+                        }
+                        var b64 = bridge.readChunk(id, offset, chunk);
+                        if (!b64) {
+                            resolve(new Blob(parts, { type: mime }));
+                            return;
+                        }
+                        var bytes = b64ToBytes(b64);
+                        parts.push(bytes);
+                        offset += bytes.length;
+                        setTimeout(step, 0);
+                    } catch (e) { reject(e); }
+                }
+                step();
+            });
+        }
+
+        function readDataUrl(id) {
+            return readBlob(id).then(function(blob) {
+                return new Promise(function(resolve, reject) {
+                    var reader = new FileReader();
+                    reader.onload = function() { resolve(reader.result); };
+                    reader.onerror = function() { reject(reader.error); };
+                    reader.readAsDataURL(blob);
+                });
+            });
+        }
+
+        function decorate(item) {
+            if (!item || item.kind === 'text') return item;
+            item.readBlob = function() { return readBlob(item.id); };
+            item.readDataUrl = function() { return readDataUrl(item.id); };
+            return item;
+        }
+
         window.${ShareReceiveContract.JS_NAMESPACE} = {
             __wta__: true,
-            version: 1,
+            version: 2,
             /** Subscribe to share batches. Returns an unsubscribe function. */
             onShare: function(fn) {
                 if (typeof fn !== 'function') return function() {};
@@ -129,14 +195,21 @@ val SHARE_INBOX_BOOTSTRAP_JS: String = """
                 }
             },
             /** Forget everything received in this document (does not affect native storage). */
-            clear: function() { queue = []; }
+            clear: function() { queue = []; },
+            /**
+             * Read a file item as a Blob, including payloads too large to inline as dataUrl
+             * (issue #1296). Text items have item.text instead.
+             */
+            readBlob: readBlob,
+            /** Same bytes as readBlob, as a data: URL. */
+            readDataUrl: readDataUrl
         };
 
         window.__WTA_SHARE_PUSH__ = function(items) {
             if (!items || !items.length) return;
             var fresh = [];
             for (var i = 0; i < items.length; i++) {
-                if (remember(items[i] && items[i].id)) fresh.push(items[i]);
+                if (remember(items[i] && items[i].id)) fresh.push(decorate(items[i]));
             }
             if (!fresh.length) return;
             queue = queue.concat(fresh);

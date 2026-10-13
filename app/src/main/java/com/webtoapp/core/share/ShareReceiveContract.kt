@@ -43,10 +43,18 @@ object ShareReceiveContract {
     /**
      * Inline ceiling for the base64 data URL handed to the page over the JS channel.
      * Beyond this the item is still persisted and still offered to the file chooser, but
-     * the page only receives metadata (`inline: false`) — shipping a multi-megabyte string
-     * through `evaluateJavascript` is neither reliable nor kind to memory.
+     * the push payload is metadata only (`inline: false`) — shipping a multi-megabyte
+     * string through `evaluateJavascript` is neither reliable nor kind to memory. The
+     * page reads the bytes on demand via [JS_NAMESPACE].readBlob / readDataUrl, which
+     * pull [READ_CHUNK_MAX_BYTES] slices through the JS bridge.
      */
     const val INLINE_MAX_BYTES: Long = 5L * 1024 * 1024
+
+    /**
+     * Ceiling for one [ShareInboxBridge.readChunk] call. The page concatenates slices
+     * into a Blob; a single JNI string must stay well under the Binder/heap comfort zone.
+     */
+    const val READ_CHUNK_MAX_BYTES: Int = 256 * 1024
 
     /** Ceiling for a `text/plain` payload. */
     const val MAX_TEXT_CHARS: Int = 100_000

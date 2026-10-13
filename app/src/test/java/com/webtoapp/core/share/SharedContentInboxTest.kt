@@ -382,4 +382,50 @@ class SharedContentInboxTest {
         assertThat(pending).hasSize(1)
         assertThat(pending.single().name).endsWith(".jpg")
     }
+
+    // ── on-demand byte reads (issue #1296) ─────────────────────────────────────
+
+    @Test
+    fun `lookup finds consumed items so a later readBlob still resolves`() = runBlocking {
+        val payload = ByteArray(64) { it.toByte() }
+        registerImage(payload)
+        val item = SharedContentInbox.acceptIntent(
+            context,
+            sendImageIntent(),
+            listOf(ShareReceiveContract.MIME_IMAGES)
+        ).single()
+        SharedContentInbox.consume(context, listOf(item.id))
+
+        val found = SharedContentInbox.lookup(context, item.id)
+        assertThat(found).isNotNull()
+        assertThat(found!!.isConsumed).isTrue()
+        assertThat(SharedContentInbox.readChunk(context, item.id, 0, payload.size))
+            .isEqualTo(payload)
+    }
+
+    @Test
+    fun `readChunk returns slices clamped to the contract ceiling`() = runBlocking {
+        val payload = ByteArray(ShareReceiveContract.READ_CHUNK_MAX_BYTES + 40) { 7 }
+        registerImage(payload)
+        val item = SharedContentInbox.acceptIntent(
+            context,
+            sendImageIntent(),
+            listOf(ShareReceiveContract.MIME_IMAGES)
+        ).single()
+
+        val first = SharedContentInbox.readChunk(
+            context, item.id, 0, ShareReceiveContract.READ_CHUNK_MAX_BYTES * 4
+        )
+        assertThat(first).hasLength(ShareReceiveContract.READ_CHUNK_MAX_BYTES)
+        assertThat(first).isEqualTo(payload.copyOf(ShareReceiveContract.READ_CHUNK_MAX_BYTES))
+
+        val rest = SharedContentInbox.readChunk(
+            context, item.id, ShareReceiveContract.READ_CHUNK_MAX_BYTES, 1024
+        )
+        assertThat(rest).isEqualTo(payload.copyOfRange(ShareReceiveContract.READ_CHUNK_MAX_BYTES, payload.size))
+
+        val eof = SharedContentInbox.readChunk(context, item.id, payload.size, 16)
+        assertThat(eof).isEmpty()
+        assertThat(SharedContentInbox.readChunk(context, "missing", 0, 16)).isNull()
+    }
 }

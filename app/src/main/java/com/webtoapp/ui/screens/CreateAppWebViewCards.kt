@@ -2620,6 +2620,15 @@ private fun ShareReceiveRows(
                             onWebViewConfigChange(webViewConfig.copy(sharePromptBeforeUse = it))
                         }
                     )
+                    WtaSectionDivider()
+                    WtaToggleRow(
+                        title = Strings.receiveShareShowToast,
+                        subtitle = Strings.receiveShareShowToastHint.ifDescriptionsShown(),
+                        checked = webViewConfig.shareShowReceivedToast,
+                        onCheckedChange = {
+                            onWebViewConfigChange(webViewConfig.copy(shareShowReceivedToast = it))
+                        }
+                    )
                 }
 
                 Column(

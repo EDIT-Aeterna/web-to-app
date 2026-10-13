@@ -5179,6 +5179,8 @@ object Strings {
     val receiveShareModeBothHint: String get() = StringsE.receiveShareModeBothHint
     val receiveSharePromptBeforeUse: String get() = StringsE.receiveSharePromptBeforeUse
     val receiveSharePromptBeforeUseHint: String get() = StringsE.receiveSharePromptBeforeUseHint
+    val receiveShareShowToast: String get() = StringsE.receiveShareShowToast
+    val receiveShareShowToastHint: String get() = StringsE.receiveShareShowToastHint
     val receiveShareCaveat: String get() = StringsE.receiveShareCaveat
     val shareReceivedToast: String get() = StringsE.shareReceivedToast
     val shareReceivedPickTitle: String get() = StringsE.shareReceivedPickTitle

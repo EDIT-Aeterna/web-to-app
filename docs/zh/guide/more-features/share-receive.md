@@ -29,9 +29,10 @@ const off = window.WTAShareInbox.onShare((items) => {
     // item.name     "Screenshot_2026-09-17.png"
     // item.size     字节数
     // item.inline   true 表示 dataUrl / text 里带着内容
-    // item.dataUrl  "data:image/png;base64,…"  （内联时）
+    // item.dataUrl  "data:image/png;base64,…"  （内联时，文件 ≤ 5 MB）
     // item.text     分享的文本                  （文本分享）
-    // item.fileUrl  "file:///…"                （本机副本）
+    // item.fileUrl  "file:///…"                （本机副本；http 页面通常读不到）
+    // item.readBlob() / item.readDataUrl()     文件条目始终可用
   }
 });
 
@@ -58,7 +59,17 @@ window.WTAShareInbox.consume(item.id);       // 或 consume([id1, id2, …])
 
 这条通道**零点击**，但只对会监听的页面有效 —— 你自己写的 HTML/前端 App，或者声明了 `DOM_ACCESS` 权限并注册监听的[扩展模块](/zh/guide/more-features/extension-modules)。第三方网站并不知道这个事件。
 
-5 MB 以内的图片会以内联 base64 `data:` URL 交付。更大的图片仍会保存、仍会提供给文件选择器，但只以元数据形式到达页面（`inline: false`）—— 把几 MB 的字符串塞过 WebView 桥既不可靠，也浪费内存。
+5 MB 以内的图片会以内联 base64 `data:` URL 交付。更大的图片仍会出现在事件里（`inline: false`），并留在收件箱（单文件上限 64 MB）。`http://127.0.0.1` 这类页面源读不了 `fileUrl`，请按需读取字节：
+
+```js
+window.addEventListener('wta:share', async (e) => {
+  for (const item of e.detail.items) {
+    if (item.type === 'text') { /* item.text */ continue; }
+    const dataUrl = item.dataUrl || await item.readDataUrl();
+    // 或者：const blob = await item.readBlob();  // 也可用 window.WTAShareInbox.readBlob(item.id)
+  }
+});
+```
 
 ### 文件选择器
 
@@ -76,6 +87,7 @@ window.WTAShareInbox.consume(item.id);       // 或 consume([id1, id2, …])
 | **接收文本与链接** | 同时接收纯文本分享。默认关闭：打开后，任何 App 里分享链接都会出现本 App。 |
 | **投递方式** | `页面事件`、`预填文件选择器` 或 `两者都使用`（默认）。 |
 | **使用前先询问** | 仅在启用文件选择器通道时显示。 |
+| **收到分享时弹出提示** | 与文件选择器通道一起出现。提示用户去点页面上的上传按钮。页面自己处理 `wta:share` 时请关掉。投递方式为仅页面事件时不显示（也不会弹 toast）。 |
 
 功能**默认关闭**。开启会改变生成的清单 —— App 多出一个 `ACTION_SEND` 入口 —— 其信誉成本与定位、通知等选项相同，因此保持 opt-in。
 

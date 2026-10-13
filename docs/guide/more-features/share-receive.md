@@ -29,9 +29,10 @@ const off = window.WTAShareInbox.onShare((items) => {
     // item.name     "Screenshot_2026-09-17.png"
     // item.size     bytes
     // item.inline   true when dataUrl / text carries the content
-    // item.dataUrl  "data:image/png;base64,…"  (when inline)
+    // item.dataUrl  "data:image/png;base64,…"  (when inline, files ≤ 5 MB)
     // item.text     the shared text            (for text shares)
-    // item.fileUrl  "file:///…"                (on-device copy)
+    // item.fileUrl  "file:///…"                (on-device copy; often unreadable from http pages)
+    // item.readBlob() / item.readDataUrl()     always available for file items
   }
 });
 
@@ -58,7 +59,17 @@ A consumed item is never re-announced — not to a later document, not on the ne
 
 This channel is **zero taps** but only works on pages that listen — a custom HTML/frontend app, or an [extension module](/guide/more-features/extension-modules) that declares the `DOM_ACCESS` permission and registers a listener. Third-party sites do not know about it.
 
-Images up to 5 MB are inlined as a base64 `data:` URL. Larger ones are still stored and still offered to the file chooser, but reach the page as metadata only (`inline: false`) — pushing multi-megabyte strings through the WebView bridge is neither reliable nor kind to memory.
+Images up to 5 MB are inlined as a base64 `data:` URL. Larger ones still arrive in the event (`inline: false`) and stay in the inbox (up to 64 MB per file). A page origin such as `http://127.0.0.1` cannot `fetch` the `fileUrl`; read the bytes on demand instead:
+
+```js
+window.addEventListener('wta:share', async (e) => {
+  for (const item of e.detail.items) {
+    if (item.type === 'text') { /* item.text */ continue; }
+    const dataUrl = item.dataUrl || await item.readDataUrl();
+    // or: const blob = await item.readBlob();  // also window.WTAShareInbox.readBlob(item.id)
+  }
+});
+```
 
 ### File chooser
 
@@ -76,6 +87,7 @@ With **Ask before using** on (the default), a short prompt offers the shared fil
 | **Receive text and links** | Also accepts plain-text shares. Off by default: it makes the app appear for every shared link in every app. |
 | **Delivery method** | `Page event`, `Pre-fill file chooser`, or `Both` (default). |
 | **Ask before using** | Only shown when the file chooser channel is enabled. |
+| **Toast when content arrives** | Shown with the file-chooser channel. Tells the user to tap the page's upload button. Turn it off when the page handles `wta:share` itself. Hidden (and the toast never fires) when delivery is page-event only. |
 
 The feature is **off by default**. Enabling it changes the generated manifest — the app gains an `ACTION_SEND` entry point — which carries the same reputation cost that keeps geolocation and notification options opt-in.
 

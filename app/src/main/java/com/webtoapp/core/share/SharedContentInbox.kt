@@ -197,6 +197,57 @@ object SharedContentInbox {
     }
 
     /**
+     * Look up any item still on disk, including consumed ones. A `fileUrl` / `readBlob`
+     * the page already received must keep resolving until TTL (issue #1296).
+     */
+    fun lookup(context: Context, id: String): SharedItem? {
+        if (id.isBlank()) return null
+        synchronized(lock) {
+            return readIndex(context).firstOrNull { it.id == id }
+        }
+    }
+
+    /**
+     * Read up to [length] bytes of a file item starting at [offset]. Returns `null` when
+     * the id is unknown, is text, or the payload file is gone. An empty array is a
+     * successful EOF (offset past the end, or [length] clamped to zero).
+     *
+     * Synchronous: [ShareInboxBridge.readChunk] is a `@JavascriptInterface` return, so
+     * the JS caller blocks on this. Cap [length] at [ShareReceiveContract.READ_CHUNK_MAX_BYTES].
+     */
+    fun readChunk(context: Context, id: String, offset: Int, length: Int): ByteArray? {
+        if (id.isBlank()) return null
+        synchronized(lock) {
+            val item = readIndex(context).firstOrNull { it.id == id } ?: return null
+            if (item.isText) return null
+            val file = item.path?.let(::File) ?: return null
+            val inbox = inboxDir(context).canonicalFile
+            val canonical = runCatching { file.canonicalFile }.getOrNull() ?: return null
+            if (!canonical.path.startsWith(inbox.path + File.separator)) return null
+            if (!canonical.isFile) return null
+            if (offset < 0 || length <= 0) return ByteArray(0)
+            val size = canonical.length()
+            if (offset.toLong() >= size) return ByteArray(0)
+            val remaining = size - offset
+            val toRead = minOf(
+                length.toLong(),
+                ShareReceiveContract.READ_CHUNK_MAX_BYTES.toLong(),
+                remaining
+            ).toInt()
+            return java.io.RandomAccessFile(canonical, "r").use { raf ->
+                raf.seek(offset.toLong())
+                val buf = ByteArray(toRead)
+                val n = raf.read(buf)
+                when {
+                    n <= 0 -> ByteArray(0)
+                    n == toRead -> buf
+                    else -> buf.copyOf(n)
+                }
+            }
+        }
+    }
+
+    /**
      * The newest item that would satisfy a file chooser asking for [acceptTypes], without
      * removing it. Returns null when nothing matches, in which case the caller must fall back
      * to the system picker.

@@ -15408,6 +15408,32 @@ object StringsE {
         AppLanguage.KOREAN -> "끄면 업로드에 공유 콘텐츠를 묻지 않고 사용합니다"
     }
 
+    val receiveShareShowToast: String get() = when (Strings.lang) {
+        AppLanguage.CHINESE -> "收到分享时弹出提示"
+        AppLanguage.ENGLISH -> "Toast when content arrives"
+        AppLanguage.ARABIC -> "إشعار عند وصول المحتوى"
+        AppLanguage.PORTUGUESE -> "Aviso ao receber conteúdo"
+        AppLanguage.SPANISH -> "Aviso al recibir contenido"
+        AppLanguage.FRENCH -> "Notification à la réception"
+        AppLanguage.GERMAN -> "Hinweis beim Empfang"
+        AppLanguage.RUSSIAN -> "Уведомление при получении"
+        AppLanguage.JAPANESE -> "受信時にトーストを表示"
+        AppLanguage.KOREAN -> "수신 시 토스트 표시"
+    }
+
+    val receiveShareShowToastHint: String get() = when (Strings.lang) {
+        AppLanguage.CHINESE -> "提示用户去点页面上的上传按钮。页面自己处理 wta:share 时请关掉"
+        AppLanguage.ENGLISH -> "Tells the user to tap the page's upload button. Turn off if the page handles wta:share itself"
+        AppLanguage.ARABIC -> "يخبر المستخدم بالنقر على زر الرفع في الصفحة. أوقفها إذا كانت الصفحة تعالج wta:share بنفسها"
+        AppLanguage.PORTUGUESE -> "Pede para tocar no botão de envio da página. Desligue se a página trata wta:share sozinha"
+        AppLanguage.SPANISH -> "Indica que pulse el botón de subida de la página. Apágalo si la página gestiona wta:share"
+        AppLanguage.FRENCH -> "Indique d'appuyer sur le bouton d'envoi de la page. Désactivez si la page gère wta:share"
+        AppLanguage.GERMAN -> "Fordert zum Tippen auf die Upload-Schaltfläche auf. Aus, wenn die Seite wta:share selbst verarbeitet"
+        AppLanguage.RUSSIAN -> "Просит нажать кнопку загрузки на странице. Выключите, если страница сама обрабатывает wta:share"
+        AppLanguage.JAPANESE -> "ページのアップロードボタンを押すよう案内します。ページが wta:share を自分で扱うならオフにしてください"
+        AppLanguage.KOREAN -> "페이지의 업로드 버튼을 누르라고 안내합니다. 페이지가 wta:share를 직접 처리하면 끄세요"
+    }
+
     val receiveShareCaveat: String get() = when (Strings.lang) {
         AppLanguage.CHINESE -> "第三方网站无法自动提交，需要在页面点击上传时选择已分享的内容"
         AppLanguage.ENGLISH -> "Third-party sites cannot be submitted to automatically — tap the page's upload control and the shared content is used"

@@ -240,6 +240,7 @@ internal object ApkConfigJsonFactory {
         "receiveShareText" to shareReceive.text,
         "shareDeliveryMode" to shareReceive.deliveryMode,
         "sharePromptBeforeUse" to shareReceive.promptBeforeUse,
+        "shareShowReceivedToast" to shareReceive.showReceivedToast,
         // "Open with" file association — the runtime gate for ACTION_VIEW file/content
         // intents. The declared mime/extension sets are contract constants, so only the
         // boolean crosses the wire.

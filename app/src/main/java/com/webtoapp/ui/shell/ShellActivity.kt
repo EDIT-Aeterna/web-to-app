@@ -80,6 +80,7 @@ class ShellActivity : AppCompatActivity() {
     private var shareReceiveMimeTypes: List<String> = emptyList()
     private var shareDeliveryMode: com.webtoapp.data.model.ShareDeliveryMode =
         com.webtoapp.data.model.ShareDeliveryMode.BOTH
+    private var shareShowReceivedToast: Boolean = true
 
     // "Open with" file association (ACTION_VIEW on file/content URIs), same inbox.
     private var openWithEnabled = false
@@ -597,6 +598,7 @@ class ShellActivity : AppCompatActivity() {
         shareDeliveryMode = try {
             com.webtoapp.data.model.ShareDeliveryMode.valueOf(config.webViewConfig.shareDeliveryMode)
         } catch (e: Exception) { com.webtoapp.data.model.ShareDeliveryMode.BOTH }
+        shareShowReceivedToast = config.webViewConfig.shareShowReceivedToast
         openWithEnabled = config.webViewConfig.openWithEnabled
 
         immersiveFullscreenEnabled = config.webViewConfig.hideToolbar
@@ -1129,11 +1131,7 @@ class ShellActivity : AppCompatActivity() {
                 )
 
                 if (accepted.any { !it.isText }) {
-                    Toast.makeText(
-                        this@ShellActivity,
-                        Strings.shareReceivedToast,
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    maybeShowShareReceivedToast()
                 }
 
                 deliverPendingShares()
@@ -1175,17 +1173,28 @@ class ShellActivity : AppCompatActivity() {
                     "收到打开方式文件: ${item.name}(${item.mimeType}, ${item.size}B)"
                 )
 
-                Toast.makeText(
-                    this@ShellActivity,
-                    Strings.shareReceivedToast,
-                    Toast.LENGTH_SHORT
-                ).show()
+                maybeShowShareReceivedToast()
 
                 deliverPendingShares()
             } catch (e: Exception) {
                 com.webtoapp.core.shell.ShellLogger.e("ShellActivity", "接收打开方式文件失败: ${e.message}", e)
             }
         }
+    }
+
+    /**
+     * The chooser-path hint. Pages that only listen for `wta:share` (JS_EVENT, or the
+     * author turned the toast off) already know the content arrived — the upload-button
+     * copy would be wrong.
+     */
+    private fun maybeShowShareReceivedToast() {
+        if (!shareShowReceivedToast) return
+        if (shareDeliveryMode == com.webtoapp.data.model.ShareDeliveryMode.JS_EVENT) return
+        Toast.makeText(
+            this,
+            Strings.shareReceivedToast,
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     /** A new document started loading; hold deliveries until it has finished. */

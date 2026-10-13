@@ -4925,6 +4925,7 @@ private fun WebApp.buildShareReceiveBlock(): ShareReceiveBlock {
         text = text,
         deliveryMode = webViewConfig.shareDeliveryMode.name,
         promptBeforeUse = webViewConfig.sharePromptBeforeUse,
+        showReceivedToast = webViewConfig.shareShowReceivedToast,
         mimeTypes = mimeTypes
     )
 }
