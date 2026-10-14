@@ -5,7 +5,7 @@
     "stargazers_count": 140,
     "forks_count": 31,
     "language": "Python",
-    "pushed_at": "2026-10-08T09:56:33Z",
+    "pushed_at": "2026-10-13T15:47:55Z",
     "html_url": "https://github.com/shiaho777/WebToApp"
   },
   {
@@ -22,8 +22,8 @@
     "description": "Achieve infinite conversation turns in a single API request via turn-mcp.             Self-hosted MCP server with browser console for human-in-the-loop AI agents.",
     "stargazers_count": 38,
     "forks_count": 9,
-    "language": "JavaScript",
-    "pushed_at": "2026-05-02T08:31:52Z",
+    "language": "TypeScript",
+    "pushed_at": "2026-10-13T13:29:04Z",
     "html_url": "https://github.com/shiaho777/turn-mcp"
   },
   {
@@ -32,7 +32,7 @@
     "stargazers_count": 23,
     "forks_count": 0,
     "language": "Kotlin",
-    "pushed_at": "2026-10-13T12:40:21Z",
+    "pushed_at": "2026-10-13T15:36:12Z",
     "html_url": "https://github.com/shiaho777/LogSleuth"
   },
   {
@@ -40,8 +40,8 @@
     "description": "Android Lua IDE with built-in interpreter, visual UI designer, debugger, and APK builder — all on-device, no root required.",
     "stargazers_count": 21,
     "forks_count": 0,
-    "language": "C",
-    "pushed_at": "2026-10-09T04:04:33Z",
+    "language": "Kotlin",
+    "pushed_at": "2026-10-13T14:57:39Z",
     "html_url": "https://github.com/shiaho777/LuaXIDE"
   },
   {
@@ -50,7 +50,7 @@
     "stargazers_count": 19,
     "forks_count": 0,
     "language": "Rust",
-    "pushed_at": "2026-10-13T02:46:02Z",
+    "pushed_at": "2026-10-13T15:32:44Z",
     "html_url": "https://github.com/shiaho777/revx"
   },
   {
@@ -86,7 +86,7 @@
     "stargazers_count": 17,
     "forks_count": 0,
     "language": "JavaScript",
-    "pushed_at": "2026-10-13T02:24:06Z",
+    "pushed_at": "2026-10-13T15:35:45Z",
     "html_url": "https://github.com/shiaho777/qsyy"
   },
   {
@@ -106,6 +106,15 @@
     "language": "Kotlin",
     "pushed_at": "2026-09-08T10:15:19Z",
     "html_url": "https://github.com/shiaho777/An-Harness"
+  },
+  {
+    "name": "float-android",
+    "description": "一部装在 Android 里的 AI 虚拟手机：拟真桌面、聊天、朋友圈、查手机、地图定位、语音/视频通话、日记日历。AI 角色有作息、日程、位置和长期记忆，会主动发消息、发帖互动。数据全在设备本地，联网只调你自己配置的 LLM/生图/语音 API。",
+    "stargazers_count": 14,
+    "forks_count": 8,
+    "language": "TypeScript",
+    "pushed_at": "2026-10-10T07:06:10Z",
+    "html_url": "https://github.com/shiaho777/float-android"
   },
   {
     "name": "MacBottle",
@@ -135,15 +144,6 @@
     "html_url": "https://github.com/shiaho777/anthropic-ui-skill"
   },
   {
-    "name": "float-android",
-    "description": "一部装在 Android 里的 AI 虚拟手机：拟真桌面、聊天、朋友圈、查手机、地图定位、语音/视频通话、日记日历。AI 角色有作息、日程、位置和长期记忆，会主动发消息、发帖互动。数据全在设备本地，联网只调你自己配置的 LLM/生图/语音 API。",
-    "stargazers_count": 13,
-    "forks_count": 7,
-    "language": "TypeScript",
-    "pushed_at": "2026-10-10T07:06:10Z",
-    "html_url": "https://github.com/shiaho777/float-android"
-  },
-  {
     "name": "memx",
     "description": "MemX — ~100× lower LLM memory on Apple, original precision. Stable planes: ~9× phys · ~100× engine · ~300× vessel capability (bitexact).",
     "stargazers_count": 13,
@@ -167,7 +167,7 @@
     "stargazers_count": 12,
     "forks_count": 0,
     "language": "C",
-    "pushed_at": "2026-10-07T08:11:29Z",
+    "pushed_at": "2026-10-13T15:40:38Z",
     "html_url": "https://github.com/shiaho777/stratum"
   },
   {
@@ -176,7 +176,7 @@
     "stargazers_count": 11,
     "forks_count": 0,
     "language": "Python",
-    "pushed_at": "2026-10-12T16:30:20Z",
+    "pushed_at": "2026-10-13T23:33:49Z",
     "html_url": "https://github.com/shiaho777/pyj-j"
   },
   {
