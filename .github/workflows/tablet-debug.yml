@@ -1,0 +1,60 @@
+name: Tablet USB debugging APK
+on:
+  push:
+    branches: [build/tablet-debug-2.7.8]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: ''
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+      - name: Install Android tools
+        run: sdkmanager --install "platforms;android-36" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
+      - name: Reuse the matching official export template
+        run: |
+          curl --fail --location --retry 3 https://github.com/shiaho777/web-to-app/releases/download/v2.7.8/web-to-app-2.7.8.APK --output /tmp/webtoapp-official.apk
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          with ZipFile('/tmp/webtoapp-official.apk') as z:
+              for name in z.namelist():
+                  if name.endswith('/'):
+                      continue
+                  if name.startswith(('assets/template/', 'assets/stacks/')):
+                      path = Path('app/src/main') / name
+                      path.parent.mkdir(parents=True, exist_ok=True)
+                      path.write_bytes(z.read(name))
+          PY
+      - name: Build the standalone debug host
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleStandardDebug --no-daemon --no-configuration-cache \
+            -Dkotlin.compiler.execution.strategy=in-process \
+            -PskipShellTemplateSync=true -PskipStackBundlesSync=true \
+            -PallowDebugSignedRelease=true -x syncCloneHostDex
+      - name: Verify APK identity and signature
+        run: |
+          APK=app/build/outputs/apk/standard/debug/app-standard-debug.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | head -n 8
+          sha256sum "$APK" > "$APK.sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WebToApp-2.7.8-tablet-debug
+          path: |
+            app/build/outputs/apk/standard/debug/*.apk
+            app/build/outputs/apk/standard/debug/*.sha256
+          retention-days: 14

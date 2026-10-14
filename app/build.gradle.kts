@@ -100,6 +100,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".tabletdebug"
+            versionNameSuffix = "-tabletdebug"
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true

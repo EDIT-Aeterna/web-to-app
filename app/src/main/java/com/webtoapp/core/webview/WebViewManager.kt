@@ -1477,6 +1477,10 @@ class WebViewManager(
 
         ensureDynamicUserAgents()
 
+        if (com.webtoapp.BuildConfig.DEBUG) {
+            WebView.setWebContentsDebuggingEnabled(true)
+        }
+
         this.currentConfig = config
 
         // Keep the renderer at foreground priority even while the app is in the
