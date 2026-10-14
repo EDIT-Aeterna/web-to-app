@@ -41,6 +41,10 @@ Debug builds enable Android WebView remote debugging when an ordinary app page
 is configured, including host previews and debug shell builds. Release builds
 do not enable it. The in-app console is separate from Chrome DevTools.
 
+An APK exported by the builder still uses the release shell template; installing
+a debug host does not enable inspection in exported release apps. This is a
+build-time capability, not an editor setting.
+
 1. Install a debug build and open the web app you want to inspect.
 2. Enable USB debugging on the Android device, connect it to your computer,
    and accept the device's USB debugging authorization prompt.
