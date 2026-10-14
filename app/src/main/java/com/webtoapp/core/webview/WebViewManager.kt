@@ -1477,6 +1477,12 @@ class WebViewManager(
 
         ensureDynamicUserAgents()
 
+        // Older WebViews do not automatically expose debuggable apps to Chrome.
+        // Match the HTML preview policy for ordinary host and shell WebViews.
+        if (com.webtoapp.BuildConfig.DEBUG) {
+            WebView.setWebContentsDebuggingEnabled(true)
+        }
+
         this.currentConfig = config
 
         // Keep the renderer at foreground priority even while the app is in the

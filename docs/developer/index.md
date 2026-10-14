@@ -35,6 +35,20 @@ Runtime Kotlin is authored under `app/` and synced into `shell/` by `syncShellRu
 
 Native C++ lives under `app/src/main/cpp/` (crypto, integrity, anti-debug, `node_bridge`, `node_launcher`, `go_exec_loader`).
 
+## Inspect a WebView over USB
+
+Debug builds enable Android WebView remote debugging when an ordinary app page
+is configured, including host previews and debug shell builds. Release builds
+do not enable it. The in-app console is separate from Chrome DevTools.
+
+1. Install a debug build and open the web app you want to inspect.
+2. Enable USB debugging on the Android device, connect it to your computer,
+   and accept the device's USB debugging authorization prompt.
+3. Open `chrome://inspect/#devices` in desktop Chrome, enable **Discover USB
+   devices**, and select **inspect** next to the page.
+
+For a full setup guide, see [Chrome's WebView debugging documentation](https://developer.chrome.com/docs/devtools/remote-debugging/webviews).
+
 ## Where to read next
 
 - [Architecture](/developer/architecture) — the preview-vs-export mental model.

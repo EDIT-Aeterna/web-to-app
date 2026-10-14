@@ -35,6 +35,19 @@
 
 原生 C++ 位于 `app/src/main/cpp/`(加密、完整性、反调试、`node_bridge`、`node_launcher`、`go_exec_loader`)。
 
+## 通过 USB 检查 WebView
+
+Debug 构建在配置普通网页时启用 Android WebView 远程调试，覆盖宿主预览和
+debug shell 构建。Release 构建不会启用它。应用内控制台与 Chrome DevTools
+是不同的工具。
+
+1. 安装 debug 构建，打开需要检查的网页应用。
+2. 在 Android 设备上开启 USB 调试，连接电脑，并允许 USB 调试授权。
+3. 在电脑 Chrome 中打开 `chrome://inspect/#devices`，勾选 **Discover USB
+   devices**，点击目标网页旁的 **inspect**。
+
+详细说明见 [Chrome WebView 调试文档](https://developer.chrome.com/docs/devtools/remote-debugging/webviews)。
+
 ## 接下来读什么
 
 - [架构](/zh/developer/architecture) —— 预览 vs 导出的心智模型。
