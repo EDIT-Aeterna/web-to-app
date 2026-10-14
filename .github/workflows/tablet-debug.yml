@@ -11,6 +11,8 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
+      - name: Test private-network XHR regression
+        run: node --test scripts/test_private_network_xhr.mjs
       - uses: actions/setup-java@v5
         with:
           distribution: temurin

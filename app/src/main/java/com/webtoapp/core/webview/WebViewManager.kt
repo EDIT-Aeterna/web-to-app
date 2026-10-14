@@ -6742,7 +6742,10 @@ class WebViewManager(
                     BridgedXHR.prototype._syncFromNative = function() {
                         this.readyState = this._xhr.readyState;
                         this.response = this._xhr.response;
-                        this.responseText = this._xhr.responseText || '';
+                        // Native XHR throws when responseText is read for binary/JSON responses.
+                        var responseType = this._xhr.responseType;
+                        this.responseText = (responseType === '' || responseType === 'text')
+                            ? (this._xhr.responseText || '') : '';
                         this.responseURL = this._xhr.responseURL || this._url;
                         this.status = this._xhr.status || 0;
                         this.statusText = this._xhr.statusText || '';
@@ -6769,7 +6772,7 @@ class WebViewManager(
                             (this._method === 'GET' || this._method === 'HEAD'));
                         if (!bridgeable) {
                             this._native = true;
-                            return this._xhr.open(method, url, async, user, password);
+                            return this._xhr.open(method, url, this._async, user, password);
                         }
                         this._native = false;
                         this._dispatch('readystatechange');
@@ -6793,7 +6796,13 @@ class WebViewManager(
                     };
 
                     BridgedXHR.prototype.send = function(body) {
-                        if (this._native) return this._xhr.send(body);
+                        if (this._native) {
+                            // Forward options set after open(), including Cesium's Blob requests.
+                            this._xhr.responseType = this.responseType;
+                            if (this._async || this.timeout !== 0) this._xhr.timeout = this.timeout;
+                            this._xhr.withCredentials = this.withCredentials;
+                            return this._xhr.send(body);
+                        }
                         if (this._async === false) throw new Error('Synchronous private network XHR is not supported');
                         var self = this;
                         nativeHttpRequest({ url: this._url, method: this._method, headers: this._headers, body: body })
